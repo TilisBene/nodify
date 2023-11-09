@@ -1,0 +1,164 @@
+<html>
+<head>
+<meta charset="utf-8">
+<title>Dumme Notizen</title>
+    
+    <style>
+    
+        body{
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            background-repeat: round;
+            background-image: url("bg-test.svg");
+            background-size: 15px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23c3c3c3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='lucide lucide-dot'%3E%3Ccircle cx='12.1' cy='12.1' r='1'/%3E%3C/svg%3E");
+        }
+        
+        div#gui{
+            width: 100wh;
+            position: fixed;
+            z-index: 10;
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            padding: 10px;
+        }
+        
+        div#gui button{
+            margin-left: auto;
+            padding: 10px 10px;
+            background: #232323;
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            height: 50px;
+            width: 50px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        canvas{
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        .node{
+            height: 200px;
+            width: 400px;
+            background-color: aqua;
+            position: absolute;
+            border-radius: 5px;
+            z-index: 1;
+            transition: box-shadow 0.3s;
+            box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.14);
+            border: none;
+            cursor: grab;
+        }
+        .node.active{
+            box-shadow: 0 6px 8px 0 rgba(0, 0, 0, 0.14);
+            z-index: 3;
+            cursor: grabbing;
+        }
+        
+    </style>
+    
+</head>
+
+<body>
+    
+    <div id="gui">
+        <button id="create" onclick="newNode()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+    </div>
+    <div id="app">
+    </div>
+    
+    <script>
+        'use strict';
+
+        let dragElements = document.querySelectorAll('.node');
+        let offsetX, offsetY, isDragging = false;
+
+        function startDragging(e) {
+            if (e.target.classList.contains('node')) {
+                // Füge die Klasse "active" zum gezogenen Element hinzu
+                e.target.classList.add('active');
+
+                if (e.type === 'touchstart') {
+                    offsetX = e.touches[0].clientX - e.target.getBoundingClientRect().left;
+                    offsetY = e.touches[0].clientY - e.target.getBoundingClientRect().top;
+                } else {
+                    offsetX = e.clientX - e.target.getBoundingClientRect().left;
+                    offsetY = e.clientY - e.target.getBoundingClientRect().top;
+                }
+                isDragging = true;
+            }
+        }
+
+        function stopDragging() {
+            isDragging = false;
+
+            // Entferne die Klasse "active" von allen dragbaren Elementen
+            document.querySelectorAll('.node').forEach(element => {
+                element.classList.remove('active');
+            });
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault(); // Verhindert das Standardverhalten der Mausereignisse
+
+                if (e.type === 'touchmove') {
+                    const x = e.touches[0].clientX - offsetX;
+                    const y = e.touches[0].clientY - offsetY;
+                    e.target.style.transform = `translate(${x}px, ${y}px)`;
+                } else {
+                    const x = e.clientX - offsetX;
+                    const y = e.clientY - offsetY;
+                    e.target.style.transform = `translate(${x}px, ${y}px)`;
+                }
+            }
+        }
+
+        document.addEventListener('mousedown', startDragging);
+        document.addEventListener('touchstart', startDragging);
+
+        document.addEventListener('mouseup', stopDragging);
+        document.addEventListener('touchend', stopDragging);
+
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag);
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function newNode() {
+            const node = document.createElement("textarea");
+            node.classList.add("node");
+            node.setAttribute("rows", "4");
+            node.setAttribute("cols", "50");
+            node.style.backgroundColor = getRandomColor(); // Zufällige Hintergrundfarbe
+            document.getElementById("app").appendChild(node);
+
+            // Aktualisiere die Liste der dragbaren Elemente und füge Event-Listener für das Ziehen hinzu
+            dragElements = document.querySelectorAll('.node');
+            dragElements.forEach(element => {
+                element.addEventListener('mousedown', startDragging);
+                element.addEventListener('touchstart', startDragging);
+            });
+        }
+
+        
+    </script>
+    
+</body>
+</html>
